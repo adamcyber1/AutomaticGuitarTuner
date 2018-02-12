@@ -86,6 +86,8 @@ int buffersize = samples; //Initializes bufferSize
 double bufferStream[samples];
 double vReal[samples];
 double vImag[samples];
+double fundamentalFrequency;
+double fundamentalFrequencyCandidates[3];
 
 struct strings {
   double targetFrequency;
@@ -169,19 +171,44 @@ if (digitalRead(LED_OUTPUT_STRING_E4) == HIGH){
    */
 
 //***************FAST FOURIER TRANSFORM AND PEAK DETECTION****************//
-
-double x = FFT_complete_function(vReal, vImag, samples);
-
+for(int a=0; a<20; a++){
+  
+  for (int i=0; i<3; i++){
+    fundamentalFrequencyCandidates[i] = FFT_complete_function(vReal, vImag, samples);
+   }
+   
+   if(fundamentalFrequencyCandidates[0]<fundamentalFrequencyCandidates[1]+0.2&&fundamentalFrequencyCandidates[0]<fundamentalFrequencyCandidates[1]+0.2){
+     
+     if(fundamentalFrequencyCandidates[0]<fundamentalFrequencyCandidates[2]+0.2&&fundamentalFrequencyCandidates[0]<fundamentalFrequencyCandidates[2]+0.2){
+        
+        if(fundamentalFrequencyCandidates[1]<fundamentalFrequencyCandidates[2]+0.2 && fundamentalFrequencyCandidates[1]<fundamentalFrequencyCandidates[2]+0.2){ 
+          fundamentalFrequency = (fundamentalFrequencyCandidates[0]+fundamentalFrequencyCandidates[1]+fundamentalFrequencyCandidates[2]);
+          break;
+      }
+    }
+   }
+   
+}
 //**********************SERVO MOTOR CONTROL*********************************//
 
 
   //**********************Output Results********************//
-  Serial.print(x);
+  Serial.print(fundamentalFrequency);
   Serial.println("");
 
 }
 
 ///////////////////////////// END MAIN LOOP ////////////////////////////////////////
+
+
+///////////////////////////OUTLIER REJECTION FUNCTION/////////////////////////////////////
+double outlier_Rejection(){
+  
+}
+
+
+
+
 
 
 
