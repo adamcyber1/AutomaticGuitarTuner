@@ -99,6 +99,8 @@ struct strings {
 
 
 
+
+
 void setup()
 {
   Serial.begin(115200); //Initialize Serial Port to 115200BAUD
@@ -138,11 +140,47 @@ void loop() {
      vReal[c] = (double) analogRead(sensorPin);
      vImag[c] = 0.0;
     }
+   
+
+ //******************CHECK STRING STATE**************************//
+
+
+
+//*********************Check For Sufficient Signal**************************//
+if (averageArray(vReal)>200) {
+   //execute algorithm
+}
+
+
+
+
+//**********************SERVO MOTOR CONTROL*********************************//
+
+
+  //**********************Output Results********************//
+ // Serial.print(fundamentalFrequency);
+  Serial.println("");
+
+}
+
+///////////////////////////// END MAIN LOOP ////////////////////////////////////////
+
+
+
+/////////////////////////////////NO_SIGNAL==1 EXECUTION STATES//////////////////////////
+
+
+
 
 //**************DIGITAL FILTERING****************//
 //SELECT DIGITAL FILTER BASED ON THE SELECTED STRING//
 
-/*
+
+
+
+void complete_algorithm(double* vReal, double* vImag, uint16_t samples ){
+
+
 if (digitalRead(LED_OUTPUT_STRING_E4) == HIGH){
    for (int c = 0; c<samples; c++) {
       vReal[c] = butterWorth_E4(vReal[c]);
@@ -168,46 +206,28 @@ if (digitalRead(LED_OUTPUT_STRING_E4) == HIGH){
       vReal[c] = butterWorth_E2(vReal[c]);
    }
 }
-   */
-
-//***************FAST FOURIER TRANSFORM AND PEAK DETECTION****************//
-for(int a=0; a<20; a++){
-  
-  for (int i=0; i<3; i++){
-    fundamentalFrequencyCandidates[i] = FFT_complete_function(vReal, vImag, samples);
-   }
    
-   if(fundamentalFrequencyCandidates[0]<fundamentalFrequencyCandidates[1]+0.2&&fundamentalFrequencyCandidates[0]<fundamentalFrequencyCandidates[1]+0.2){
-     
-     if(fundamentalFrequencyCandidates[0]<fundamentalFrequencyCandidates[2]+0.2&&fundamentalFrequencyCandidates[0]<fundamentalFrequencyCandidates[2]+0.2){
-        
-        if(fundamentalFrequencyCandidates[1]<fundamentalFrequencyCandidates[2]+0.2 && fundamentalFrequencyCandidates[1]<fundamentalFrequencyCandidates[2]+0.2){ 
-          fundamentalFrequency = (fundamentalFrequencyCandidates[0]+fundamentalFrequencyCandidates[1]+fundamentalFrequencyCandidates[2]);
-          break;
-      }
-    }
-   }
-   
-}
-//**********************SERVO MOTOR CONTROL*********************************//
-
-
-  //**********************Output Results********************//
-  Serial.print(fundamentalFrequency);
-  Serial.println("");
-
-}
-
-///////////////////////////// END MAIN LOOP ////////////////////////////////////////
-
-
-///////////////////////////OUTLIER REJECTION FUNCTION/////////////////////////////////////
-double outlier_Rejection(){
   
+  //***************FAST FOURIER TRANSFORM AND PEAK DETECTION****************//
+fundamentalFrequency =  FFT_complete_function(vReal, vImag, samples);
 }
 
 
 
+
+
+
+
+
+
+//Average function//
+double averageArray(double* vReal){
+double sum = 0;
+  for (int i = 0; i<sizeof(vReal);i++){
+    sum += vReal[i];   
+  }
+  return (sum/sizeof(vReal));
+}
 
 
 
