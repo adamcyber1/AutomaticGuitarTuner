@@ -87,7 +87,9 @@ double bufferStream[samples];
 double vReal[samples];
 double vImag[samples];
 double fundamentalFrequency;
-double fundamentalFrequencyCandidates[3];
+double frequencyCandidates[3];
+double error;
+int indexCounter = 0;
 
 struct strings {
   double targetFrequency;
@@ -97,6 +99,7 @@ struct strings {
 
 //FLAGS//
 bool no_Signal = 1;
+bool valid_Frequency = 0
 bool is_Tuned = 0;
 bool error = 0;
 
@@ -166,11 +169,6 @@ if (no_Signal==0) {
 }
 
 
-
-
-
-
-
 }
 
 ///////////////////////////// END MAIN LOOP ////////////////////////////////////////
@@ -227,10 +225,24 @@ if (digitalRead(LED_OUTPUT_STRING_E4) == HIGH){
    
 
   //***************FAST FOURIER TRANSFORM AND PEAK DETECTION****************//
-fundamentalFrequency =  FFT_complete_function(vReal, vImag, samples);
+
+frequencyCandidates[indexCounter] =  FFT_complete_function(vReal, vImag, samples);
+if (indexCounter>=1) {
+  if(abs(frequencyCandidates[indexCounter]-frequencyCandidates[indexCounter-1])<5){
+    if (indexCounter == 2){
+      validFrequency = 1;
+    }
+    indexCounter++;
+  }else {
+    frequencyCandidates[0] = frequencyCandidates[indexCounter];
+    indexCounter = 1;
+  }
+}
 
 //***********************Check Frequency**********************************//
-double error = abs(fundamentalFrequency - tuneString.targetFrequency)
+if (validFrequency == 1){
+validFrequency = 0; //reset flag
+error = abs(fundamentalFrequency - tuneString.targetFrequency)
 if (error<tuneString.frequencyErrorMax){
   is_Tuned = 1;
   //flash LEDs
@@ -242,9 +254,7 @@ if (error<tuneString.frequencyErrorMax){
   error = 1;
   Serial.println("ERROR: FREQUENCY DETECTION NOT ACCURATE");
 }
-
-
-
+}
 
 
 }
