@@ -190,6 +190,7 @@ void loop() {
   for ( int c = 0; c < buffersize; c++) {
      vReal[c] = (double) analogRead(sensorPin);
      vImag[c] = 0.0;
+    // Serial.println(vReal[c]);
     }
    
 
@@ -271,15 +272,18 @@ if(digitalRead(set_pin)==HIGH && count == 0){
 
 
 //*********************Check For Sufficient Signal**************************//
-if (averageArray(vReal)>200) {
+if (averageArray(vReal)>500) {
    no_Signal = 0;
+   Serial.println(averageArray(vReal));
 } else {
-  Serial.println("Insufficient Signal");
+  //Serial.println("Insufficient Signal");
+  Serial.println(averageArray(vReal));
 }
 
 //////////Enter Algorithm/////////
 if (no_Signal==0) {
   complete_algorithm(vReal, vImag, samples);
+  no_Signal=1;
 }
 
 
@@ -292,7 +296,7 @@ if (no_Signal==0) {
 
 
 
-/////////////////////////////////NO_SIGNAL==1 EXECUTION STATES//////////////////////////
+/////////////////////////////////NO_SIGNAL==0 EXECUTION STATES//////////////////////////
 
 void complete_algorithm(double* vReal, double* vImag, uint16_t samples ){
 
@@ -360,7 +364,7 @@ if (indexCounter>=1) {
 //***********************Check Frequency**********************************//
 if (valid_Frequency == 1){
 valid_Frequency = 0; //reset flag
-error = abs(averageArray(frequencyCandidate) - 100);
+error = abs(averageArray(frequencyCandidate) - tuneString.targetFrequency);
 frequencyCandidate[0]=0;
 frequencyCandidate[1]=0;
 frequencyCandidate[2]=0;
@@ -383,9 +387,6 @@ if (error<5){
 
 
 //comment
-
-
-
 
 
 
