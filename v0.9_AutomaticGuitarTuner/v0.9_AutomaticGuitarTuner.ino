@@ -182,17 +182,27 @@ void setup()
 
 /////////////////////////////MAIN LOOP ////////////////////////////////////////
 
+double test_average =3.1415;
 
 
 void loop() {
 
- // Serial.println(E2.targetFrequency);
+ // Serial.println("===================================================== NEW LOOP ===========================================");
   //***************SIGNAL AQUISITION****************//
   for ( int c = 0; c < buffersize; c++) {
      vReal[c] = (double) analogRead(sensorPin);
+     //Serial.print(vReal[c]);
+     //Serial.print("  ");
      vImag[c] = 0.0;
     // Serial.println(vReal[c]);
     }
+
+test_average = averageArray(vReal);
+//Serial.print("Average: ");
+//Serial.print(test_average);
+//Serial.print("\n");
+
+    
    
 
  //******************CHECK WHICH STRING IS SELECTED**************************//
@@ -272,7 +282,7 @@ if(digitalRead(set_pin)==HIGH && count == 0){
 
 
 //*********************Check For Sufficient Signal**************************//
-if (1) {
+if (averageArray(vReal)>9) {
    no_Signal = 0;
    //Serial.println(averageArray(vReal));
 } else {
@@ -347,9 +357,9 @@ if (digitalRead(LED_OUTPUT_STRING_E2) == HIGH){
 
 frequencyCandidate[indexCounter] =  FFT_complete_function(vReal, vImag, samples);
 
-//Serial.print("Detected Frequency:");
-//Serial.print(frequencyCandidate[indexCounter]);
-//Serial.print("\n");
+Serial.print("Detected Frequency:");
+Serial.print(frequencyCandidate[indexCounter]);
+Serial.print("\n");
 
 //Serial.print("Index Counter:");
 //Serial.print(indexCounter);
@@ -406,11 +416,11 @@ Serial.print("\n");
 frequencyCandidate[0]=0;
 frequencyCandidate[1]=0;
 frequencyCandidate[2]=0;
-if (error<3){
+if (error<1.5){
   is_Tuned = 1;
   Serial.println("Guitar is tuned yayyyyyyyyyyyyyyyyyyyyy");
   //flash LEDs
-} else if (error<5 && error<50) {
+} else if (error>=1.5 && error<50) {
   is_Tuned = 0;
   Serial.println("Guitar NOT TUNED");
   //motor control
