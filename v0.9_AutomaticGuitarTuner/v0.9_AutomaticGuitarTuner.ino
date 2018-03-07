@@ -19,7 +19,7 @@
  *Zhang'Ado' Qinyao
  *Ashen
  *Kaya 
- *Vlad Mirkadirka
+ *Vladimir
  */
 
 
@@ -59,7 +59,7 @@
 
 /////////////////////////////////////////Libraries////////////////////////////////////////////  
 
-#include "arduinoFFT.h"
+
 #include "AGT_FFT.h" 
 #include "AGT_butterworth.h" 
 
