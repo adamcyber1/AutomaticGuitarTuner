@@ -68,45 +68,43 @@
 
 
 
-//https://github.com/kosme/arduinoFFT
-arduinoFFT FFT = arduinoFFT(); /* Create FFT object from arduinoFFT library */
 
 ///////////////////////CONFIGURATION AND SETUP/////////////////////////////
+arduinoFFT FFT = arduinoFFT(); /* Create FFT object from arduinoFFT library */
+
 #define SCL_INDEX 0x00
 #define SCL_TIME 0x01
 #define SCL_FREQUENCY 0x02
 
+//settings
 const uint16_t samples = 512; //Must be power of two. Defines the size of the buffer that will be operated on (FFT).
 const double samplingFrequency = 8940; //Sampling rate of the arduino MEGA
-int sensorPin = A0; //Defines the analog pin for the pickup signal
-int sensorValue = 0; //Intializes Sensor Value
+
+//buffers and results
 int buffersize = samples; //Initializes bufferSize
-double bufferStream[samples];
-double vReal[samples];
-double vImag[samples];
-double fundamentalFrequency;
-double frequencyCandidate[3];
-double error;
+double vReal[samples]; //real component of signal data
+double vImag[samples]; //imaginary component of signal data (set to 0)
+double fundamentalFrequency; //maximum value of signal spectrum
+double frequencyCandidate[3]; 
+double error; //difference between target frequency and detected frequency
+
+//counters//
 int indexCounter = 0;
+int count = 0;
 
-
-
-
-
+//PINS//
 //LED CONTROL//
 int set_pin = 13;
-
 int LED_OUTPUT_STRING_A2 = 5;
 int LED_OUTPUT_STRING_D3 = 6;
 int LED_OUTPUT_STRING_G3 = 7;
 int LED_OUTPUT_STRING_B2 = 8;
 int LED_OUTPUT_STRING_E2 = 9;
 int LED_OUTPUT_STRING_E4 = 4;
-
 int currentLed = 0;
-int count = 0;
-
-
+//SENSORS//
+int sensorPin = A0; //Defines the analog pin for the pickup signal
+int sensorValue = 0; //Intializes Sensor Value
 
 //FLAGS//
 bool no_Signal = 1;
@@ -114,33 +112,26 @@ bool valid_Frequency = 0;
 bool is_Tuned = 0;
 bool error_flag = 0;
 
-//STRINGS//
+//STRING PARAMETERS//
+//CONSIDER SHRINKING THIS ONTO ONE LINE IE. struct strings E2, AA2, D3, G3 etc...
 struct strings  {
   double targetFrequency;
   double frequencyErrorMax;
 };
- struct strings E2;
+struct strings E2;
 struct strings AA2; 
- struct strings D3;    
- struct strings G3;
+struct strings D3;    
+struct strings G3;
 struct strings B3;
 struct strings E4;
- struct strings tuneString;
-
-
-
-
-
-
-
+struct strings tuneString;
 
 void setup()
 {
   Serial.begin(115200); //Initialize Serial Port to 115200BAUD
-  Serial.println("Ready"); 
+  Serial.println("Welcome to the AGT"); 
  
-
-///////////////DEFINE STRINGS /////////////////////////////////
+///////////////DEFINE STRING PARAMETERS /////////////////////////////////
   E2.targetFrequency = 82.4;
   E2.frequencyErrorMax = 2;
   AA2.targetFrequency = 110;
@@ -156,8 +147,7 @@ void setup()
   tuneString.targetFrequency = 100;
   tuneString.frequencyErrorMax = 2;
 
-
-  //LED CONTROL//
+  //USER INTERFACE LEDS//
   pinMode(set_pin, INPUT);
   pinMode(LED_OUTPUT_STRING_E4, OUTPUT);
   pinMode(LED_OUTPUT_STRING_A2, OUTPUT);
@@ -166,26 +156,13 @@ void setup()
   pinMode(LED_OUTPUT_STRING_B2, OUTPUT);
   pinMode(LED_OUTPUT_STRING_E2, OUTPUT);
 
-  
-    
 }
-
-
-   
-
 ///////////////////////END CONFIGURATION AND SETUP/////////////////////////
 
-
-
 /////////////////////////////MAIN LOOP ////////////////////////////////////////
-
-double test_average =3.1415;
-
-
 void loop() {
-
- // Serial.println("===================================================== NEW LOOP ===========================================");
-  //***************SIGNAL AQUISITION****************//
+// Serial.println("===================================================== NEW LOOP ===========================================");
+//***************SIGNAL AQUISITION****************//
   for ( int c = 0; c < buffersize; c++) {
      vReal[c] = (double) analogRead(sensorPin);
      //Serial.print(vReal[c]);
@@ -194,16 +171,7 @@ void loop() {
     // Serial.println(vReal[c]);
     }
 
-test_average = averageArray(vReal);
-//Serial.print("Average: ");
-//Serial.print(test_average);
-//Serial.print("\n");
-
-    
-   
-
- //******************CHECK WHICH STRING IS SELECTED**************************//
-
+ //******************STRING SELECTION*************************//
 if(digitalRead(set_pin)==HIGH && count == 0){
     digitalWrite(LED_OUTPUT_STRING_A2, LOW);
     digitalWrite(LED_OUTPUT_STRING_D3, LOW);
@@ -258,7 +226,6 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     delay(1000);    
     count++;
    }
-  
    if(digitalRead(set_pin)==HIGH && count == 5){
     digitalWrite(LED_OUTPUT_STRING_E2, LOW);
     digitalWrite(LED_OUTPUT_STRING_A2, LOW);
@@ -269,48 +236,33 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     delay(1000); 
     count++;
   }  
-  
   count = 0;
 
-
- 
-
- 
-
-
 //*********************Check For Sufficient Signal**************************//
+//If a string has not been plucked, then there is no need to perform an FFT//
 if (averageArray(vReal)>9) {
-   no_Signal = 0;
-   //Serial.println(averageArray(vReal));
+   no_Signal = 0;   //Serial.println(averageArray(vReal));
 } else {
+  no_Signal = 1;
   //Serial.println("Insufficient Signal");
  // Serial.println(averageArray(vReal));
 }
 
-//////////Enter Algorithm/////////
+//*****************Enter Algorithm********************//
+//If a signal has bee registered, perform the frequency detection algorithm//
 if (no_Signal==0) {
   complete_algorithm(vReal, vImag, samples);
-  no_Signal=1;
+  no_Signal=1; //reset signal flag
 }
-
-
-}
+} // loop
 
 ///////////////////////////// END MAIN LOOP ////////////////////////////////////////
 
 
-
-
-
-
-/////////////////////////////////NO_SIGNAL==0 EXECUTION STATES//////////////////////////
-
 void complete_algorithm(double* vReal, double* vImag, uint16_t samples ){
-
 
 //**************DIGITAL FILTERING and Configuration****************//
 //SELECT DIGITAL FILTER and Parameters BASED ON THE SELECTED STRING//
-
 if (digitalRead(LED_OUTPUT_STRING_E2) == HIGH){
    tuneString.targetFrequency = E2.targetFrequency;
    tuneString.frequencyErrorMax =  E2.frequencyErrorMax;
@@ -351,33 +303,30 @@ if (digitalRead(LED_OUTPUT_STRING_E2) == HIGH){
    
 
   //***************FAST FOURIER TRANSFORM AND PEAK DETECTION****************//
-
 frequencyCandidate[indexCounter] =  FFT_complete_function(vReal, vImag, samples);
-
 Serial.print("Detected Frequency:");
 Serial.print(frequencyCandidate[indexCounter]);
 Serial.print("\n");
-
 //Serial.print("Index Counter:");
 //Serial.print(indexCounter);
 //Serial.print("\n");
 
-
-
-
-
-//Outlier Rejection//
+//*****************************Outlier Rejection***************************//
+/* Description:
+This algorithm only accepts a detected frequency if 3 consecutive frequencies are within a certain spread (+/-4Hz), 
+at which point it takes the average of these values and accepts them as a valid frequency.
+example: The detected frequencies: [100, 99, 92, 100, 98, 101, 102, 85, 104]
+         would yield the following:[100, 99, 92, (100, 98, 101), 102, 85, 104]
+So only one set here would be accepted, and (100+98+101) / 3 would be the output frequency.
+*/
 if (indexCounter>=1) {
-  
   if(abs(frequencyCandidate[indexCounter]-frequencyCandidate[indexCounter-1])<4){
-    
     if (indexCounter == 2){
-      valid_Frequency = 1;
+      valid_Frequency = 1; //allows entry into the motor control block
       indexCounter = 1;
     }else{
       indexCounter++;
-    }
-    
+    } 
   }else {
     frequencyCandidate[0] = frequencyCandidate[indexCounter];
     indexCounter = 1;
@@ -386,18 +335,22 @@ if (indexCounter>=1) {
   indexCounter++;
 }
 
-
-
 //***********************Check Frequency**********************************//
+/* Description:
+Depending on the detected pitch of the string, it will be loosened or tightened or, in the event that it is 
+properly tuned, the LED's will blink.
+
+In the event that the detected frequency is radically different than the expected pitch, an error will be assumed and no
+action will be taken to avoid accidentally overtightening the string
+*/
 if (valid_Frequency == 1){
 //Serial.print("Valid Frequency Flag:");
 //Serial.print(valid_Frequency);
 //Serial.print("\n");
 //Serial.println("VALID FREQUENCY FOUND AND IS:"); 
 //Serial.println(frequencyCandidate[0]); 
-valid_Frequency = 0; //reset flag
+valid_Frequency = 0; //reset flag to wait for next valid frequency
 error = abs(averageArray(frequencyCandidate) - tuneString.targetFrequency);
-
 Serial.print("Average frequency detected: ");
 Serial.print(averageArray(frequencyCandidate));
 Serial.print("\n");
@@ -407,9 +360,6 @@ Serial.print("\n");
 Serial.print("Error: ");
 Serial.print(error);
 Serial.print("\n");
-
-
-
 frequencyCandidate[0]=0;
 frequencyCandidate[1]=0;
 frequencyCandidate[2]=0;
@@ -429,13 +379,6 @@ if (error<1.5){
 }
 
 }
-
-
-
-
-//comment
-
-
 
 ///////Average function/////////
 double averageArray(double* vReal){
