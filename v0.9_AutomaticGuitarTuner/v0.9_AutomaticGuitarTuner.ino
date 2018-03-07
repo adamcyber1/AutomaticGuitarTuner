@@ -36,24 +36,21 @@
   * The accoustic signal is detected and recorded using a standard guitar pickup. This signal is sampled at a rate of 8900Hz and 
   * stored in a buffer to await processing.
   * 
-  * 2) DIGITAL FILTERING
+  * 2) STRING SELECTION 
   * 
-  * add content
+  * The LED interface is used to select the desired string to tune.
+  *
+  * 3) DIGITAL FILTERING
   * 
-  * 3) FAST FOURIER TRANSFORM AND PEAK DETECTION
+  * A 2nd order digital butterworth bandpass filter is used to filter out harmonics.
   * 
-  * add content
+  * 4) FAST FOURIER TRANSFORM AND PEAK DETECTION
   * 
-  * 4) SERVO MOTOR CONTROL 
+  * An FFT is performed on the filtered data and the spectrum's maximum is extracted -this is the pitch of the string.
   * 
-  * add content
+  * 5) SERVO MOTOR CONTROL 
   * 
-  * 
-  * 
-  * 
-  * 
-  * 
-  * 
+  * The guitar string is loosened or tightened depending on the pitch of the string.
   * 
   * 
   * */
@@ -63,13 +60,13 @@
 /////////////////////////////////////////Libraries////////////////////////////////////////////  
 
 #include "arduinoFFT.h"
-#include "AGT_FFT.h"
-#include "AGT_butterworth.h"
+#include "AGT_FFT.h" 
+#include "AGT_butterworth.h" 
 
 
 ///////////////////////////////////////// END Libraries////////////////////////////////////////////  
 
-//https://www-users.cs.york.ac.uk/~fisher/cgi-bin/mkfscript
+
 
 //https://github.com/kosme/arduinoFFT
 arduinoFFT FFT = arduinoFFT(); /* Create FFT object from arduinoFFT library */

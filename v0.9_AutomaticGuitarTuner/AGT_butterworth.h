@@ -1,6 +1,9 @@
 #ifndef AGT_butterworth_H
 #define AGT_butterworth_H
 
+//Generated using:
+//https://www-users.cs.york.ac.uk/~fisher/cgi-bin/mkfscript
+
 #include <Arduino.h>
 
 #define NPOLES 4
