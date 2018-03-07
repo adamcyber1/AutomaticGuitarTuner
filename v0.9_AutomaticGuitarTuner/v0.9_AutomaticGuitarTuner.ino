@@ -116,7 +116,8 @@ bool error_flag = 0;
 //CONSIDER SHRINKING THIS ONTO ONE LINE IE. struct strings E2, AA2, D3, G3 etc...
 struct strings  {
   double targetFrequency;
-  double frequencyErrorMax;
+  double tighten_rate; //the frequency shift for a quarter rotation of the adjustment knob
+  double loosen_rate;
 };
 struct strings E2;
 struct strings AA2; 
@@ -132,20 +133,27 @@ void setup()
   Serial.println("Welcome to the AGT"); 
  
 ///////////////DEFINE STRING PARAMETERS /////////////////////////////////
-  E2.targetFrequency = 82.4;
-  E2.frequencyErrorMax = 2;
+  E2.targetFrequency = 82.4; //desired 'in tune' pitch
+  E2.loosen_rate= 0.083; //how fast the adjustment knob reduces the frequency in Hz/degree of rotation (loosen)
+  E2.tighten_rate= 0.055;
   AA2.targetFrequency = 110;
-  AA2.frequencyErrorMax = 2;
+  AA2.loosen_rate= 0.0511;  
+  AA2.tighten_rate = 0.0844;
   D3.targetFrequency = 146.8;
-  D3.frequencyErrorMax = 2;
+  D3.loosen_rate= 0.05;  
+  D3.tighten_rate = 0.0722;
   G3.targetFrequency = 196;
-  G3.frequencyErrorMax = 2;
+  G3.loosen_rate = 0.07; 
+  G3.tighten_rate = 0.03666;
   B3.targetFrequency = 247;
-  B3.frequencyErrorMax = 2;
+  B3.loosen_rate = 0.094;
+  B3.tighten_rate = 0.128;
   E4.targetFrequency = 329.6;
-  E4.frequencyErrorMax = 2;
+  E4.loosen_rate = 0.08888;  
+  E4.tighten_rate= 0.084;
   tuneString.targetFrequency = 100;
-  tuneString.frequencyErrorMax = 2;
+  tuneString.loosen_rate = 100;
+  tuneString.tighten_rate = 100;
 
   //USER INTERFACE LEDS//
   pinMode(set_pin, INPUT);
@@ -179,7 +187,7 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     digitalWrite(LED_OUTPUT_STRING_B2, LOW);
     digitalWrite(LED_OUTPUT_STRING_E4, LOW);
     digitalWrite(LED_OUTPUT_STRING_E2, HIGH);   
-      delay(1000);    
+      delay(300);    
       count++; 
   }
   if(digitalRead(set_pin)==HIGH && count == 1){
@@ -190,7 +198,7 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     digitalWrite(LED_OUTPUT_STRING_B2, LOW);
     digitalWrite(LED_OUTPUT_STRING_E2, LOW);
     digitalWrite(LED_OUTPUT_STRING_A2, HIGH);  
-      delay(1000);    
+      delay(300);    
       count++;
   }
    if(digitalRead(set_pin)==HIGH && count == 2){
@@ -201,7 +209,7 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     digitalWrite(LED_OUTPUT_STRING_B2, LOW);
     digitalWrite(LED_OUTPUT_STRING_E2, LOW);
     digitalWrite(LED_OUTPUT_STRING_D3, HIGH);
-    delay(1000);    
+    delay(300);    
     count++;
    }
     if(digitalRead(set_pin)==HIGH && count == 3){
@@ -212,7 +220,7 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     digitalWrite(LED_OUTPUT_STRING_B2, LOW);
     digitalWrite(LED_OUTPUT_STRING_E2, LOW);
     digitalWrite(LED_OUTPUT_STRING_G3, HIGH);
-    delay(1000);    
+    delay(300);    
     count++;
    }
     if(digitalRead(set_pin)==HIGH && count == 4){
@@ -223,7 +231,7 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     digitalWrite(LED_OUTPUT_STRING_B2, LOW);
     digitalWrite(LED_OUTPUT_STRING_E2, LOW);
     digitalWrite(LED_OUTPUT_STRING_B2, HIGH);
-    delay(1000);    
+    delay(300);    
     count++;
    }
    if(digitalRead(set_pin)==HIGH && count == 5){
@@ -233,10 +241,12 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     digitalWrite(LED_OUTPUT_STRING_G3, LOW);
     digitalWrite(LED_OUTPUT_STRING_B2, LOW);  
     digitalWrite(LED_OUTPUT_STRING_E4, HIGH);    
-    delay(1000); 
+    delay(300); 
     count++;
   }  
-  count = 0;
+  if (count==6) {
+    count = 0;
+  }
 
 //*********************Check For Sufficient Signal**************************//
 //If a string has not been plucked, then there is no need to perform an FFT//
@@ -265,37 +275,31 @@ void complete_algorithm(double* vReal, double* vImag, uint16_t samples ){
 //SELECT DIGITAL FILTER and Parameters BASED ON THE SELECTED STRING//
 if (digitalRead(LED_OUTPUT_STRING_E2) == HIGH){
    tuneString.targetFrequency = E2.targetFrequency;
-   tuneString.frequencyErrorMax =  E2.frequencyErrorMax;
    for (int c = 0; c<samples; c++) {
       vReal[c] = butterWorth_E2(vReal[c]);
     }
 }else if  (digitalRead(LED_OUTPUT_STRING_A2) == HIGH){
   tuneString.targetFrequency = AA2.targetFrequency;
-   tuneString.frequencyErrorMax =  AA2.frequencyErrorMax;
    for (int c = 0; c<samples; c++) {
       vReal[c] = butterWorth_A2(vReal[c]);
    }
 } else if  (digitalRead(LED_OUTPUT_STRING_D3) == HIGH){
-  tuneString.targetFrequency = D3.targetFrequency;
-   tuneString.frequencyErrorMax =  D3.frequencyErrorMax;
+  tuneString.targetFrequency = D3.targetFrequency;;
    for (int c = 0; c<samples; c++) {
       vReal[c] = butterWorth_D3(vReal[c]);
    }
 } else if  (digitalRead(LED_OUTPUT_STRING_G3) == HIGH){
   tuneString.targetFrequency = G3.targetFrequency;
-   tuneString.frequencyErrorMax =  G3.frequencyErrorMax;
    for (int c = 0; c<samples; c++) {
       vReal[c] = butterWorth_G3(vReal[c]);
    }
 } else if  (digitalRead(LED_OUTPUT_STRING_B2) == HIGH){
   tuneString.targetFrequency = B3.targetFrequency;
-   tuneString.frequencyErrorMax =  B3.frequencyErrorMax;
    for (int c = 0; c<samples; c++) {
       vReal[c] = butterWorth_B2(vReal[c]);
    }
 } else if  (digitalRead(LED_OUTPUT_STRING_E4) == HIGH){
   tuneString.targetFrequency = E4.targetFrequency;
-   tuneString.frequencyErrorMax =  E4.frequencyErrorMax;
    for (int c = 0; c<samples; c++) {
       vReal[c] = butterWorth_E4(vReal[c]);
    }
@@ -320,7 +324,7 @@ example: The detected frequencies: [100, 99, 92, 100, 98, 101, 102, 85, 104]
 So only one set here would be accepted, and (100+98+101) / 3 would be the output frequency.
 */
 if (indexCounter>=1) {
-  if(abs(frequencyCandidate[indexCounter]-frequencyCandidate[indexCounter-1])<4){
+  if(abs(frequencyCandidate[indexCounter]-frequencyCandidate[indexCounter-1])<3){
     if (indexCounter == 2){
       valid_Frequency = 1; //allows entry into the motor control block
       indexCounter = 1;
@@ -367,7 +371,19 @@ if (error<1.5){
   is_Tuned = 1;
   Serial.println("Guitar is tuned yayyyyyyyyyyyyyyyyyyyyy");
   //flash LEDs
-} else if (error>=1.5 && error<50) {
+  for (int flash = 0; flash<10; flash++) {
+      digitalWrite(LED_OUTPUT_STRING_E2, !digitalRead(LED_OUTPUT_STRING_E2));
+      digitalWrite(LED_OUTPUT_STRING_A2, !digitalRead(LED_OUTPUT_STRING_A2));
+      digitalWrite(LED_OUTPUT_STRING_D3, !digitalRead(LED_OUTPUT_STRING_D3));
+      digitalWrite(LED_OUTPUT_STRING_G3, !digitalRead(LED_OUTPUT_STRING_G3));
+      digitalWrite(LED_OUTPUT_STRING_B2, !digitalRead(LED_OUTPUT_STRING_B2));
+      digitalWrite(LED_OUTPUT_STRING_E4, !digitalRead(LED_OUTPUT_STRING_E4));
+       delay(100);
+    }
+   
+
+    
+} else if (error>=1.5 && error<35) {
   is_Tuned = 0;
   Serial.println("Guitar NOT TUNED");
   //motor control
@@ -387,6 +403,10 @@ double sum = 0;
     sum += vReal[i];   
   }
   return (sum/sizeof(vReal));
+}
+
+void adjustString(double error) {
+  
 }
 
 
