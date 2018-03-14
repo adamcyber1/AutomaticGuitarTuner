@@ -62,6 +62,7 @@
 
 #include "AGT_FFT.h" 
 #include "AGT_butterworth.h" 
+#include <Servo.h>
 
 
 ///////////////////////////////////////// END Libraries////////////////////////////////////////////  
@@ -118,6 +119,7 @@ struct strings  {
   double targetFrequency;
   double tighten_rate; //the frequency shift for a quarter rotation of the adjustment knob
   double loosen_rate;
+  int ServoPin;
 };
 struct strings E2;
 struct strings AA2; 
@@ -127,6 +129,10 @@ struct strings B3;
 struct strings E4;
 struct strings tuneString;
 
+//Servos//
+Servo servoTune;
+
+
 void setup()
 {
   Serial.begin(115200); //Initialize Serial Port to 115200BAUD
@@ -134,11 +140,13 @@ void setup()
  
 ///////////////DEFINE STRING PARAMETERS /////////////////////////////////
   E2.targetFrequency = 82.4; //desired 'in tune' pitch
-  E2.loosen_rate= 0.083; //how fast the adjustment knob reduces the frequency in Hz/degree of rotation (loosen)
-  E2.tighten_rate= 0.055;
+  E2.loosen_rate= 0.04; //how fast the adjustment knob reduces the frequency in Hz/degree of rotation (loosen)
+  E2.tighten_rate= 0.03;
+  E2.ServoPin = 10;
   AA2.targetFrequency = 110;
   AA2.loosen_rate= 0.0511;  
   AA2.tighten_rate = 0.0844;
+  AA2.ServoPin = 11;
   D3.targetFrequency = 146.8;
   D3.loosen_rate= 0.05;  
   D3.tighten_rate = 0.0722;
@@ -164,6 +172,16 @@ void setup()
   pinMode(LED_OUTPUT_STRING_B2, OUTPUT);
   pinMode(LED_OUTPUT_STRING_E2, OUTPUT);
 
+
+
+  
+
+
+
+
+   
+  
+
 }
 ///////////////////////END CONFIGURATION AND SETUP/////////////////////////
 
@@ -178,6 +196,8 @@ void loop() {
      vImag[c] = 0.0;
     // Serial.println(vReal[c]);
     }
+
+    
 
  //******************STRING SELECTION*************************//
 if(digitalRead(set_pin)==HIGH && count == 0){
@@ -197,7 +217,7 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     digitalWrite(LED_OUTPUT_STRING_G3, LOW);
     digitalWrite(LED_OUTPUT_STRING_B2, LOW);
     digitalWrite(LED_OUTPUT_STRING_E2, LOW);
-    digitalWrite(LED_OUTPUT_STRING_A2, HIGH);  
+    digitalWrite(LED_OUTPUT_STRING_A2, HIGH);                                                                                                                   
       delay(300);    
       count++;
   }
@@ -221,7 +241,7 @@ if(digitalRead(set_pin)==HIGH && count == 0){
     digitalWrite(LED_OUTPUT_STRING_E2, LOW);
     digitalWrite(LED_OUTPUT_STRING_G3, HIGH);
     delay(300);    
-    count++;
+    count++;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
    }
     if(digitalRead(set_pin)==HIGH && count == 4){
         digitalWrite(LED_OUTPUT_STRING_E4, LOW);
@@ -255,7 +275,7 @@ if (averageArray(vReal)>9) {
 } else {
   no_Signal = 1;
   //Serial.println("Insufficient Signal");
- // Serial.println(averageArray(vReal));
+ //Serial.println(averageArray(vReal));
 }
 
 //*****************Enter Algorithm********************//
@@ -274,12 +294,19 @@ void complete_algorithm(double* vReal, double* vImag, uint16_t samples ){
 //**************DIGITAL FILTERING and Configuration****************//
 //SELECT DIGITAL FILTER and Parameters BASED ON THE SELECTED STRING//
 if (digitalRead(LED_OUTPUT_STRING_E2) == HIGH){
+  //Serial.println("e2 selected");
    tuneString.targetFrequency = E2.targetFrequency;
+   tuneString.loosen_rate = E2.loosen_rate; //how fast the adjustment knob reduces the frequency in Hz/degree of rotation (loosen)
+   tuneString.tighten_rate = E2.tighten_rate;
+   servoTune.attach(E2.ServoPin); //must be a pwm pin
    for (int c = 0; c<samples; c++) {
       vReal[c] = butterWorth_E2(vReal[c]);
     }
 }else if  (digitalRead(LED_OUTPUT_STRING_A2) == HIGH){
   tuneString.targetFrequency = AA2.targetFrequency;
+  tuneString.loosen_rate = AA2.loosen_rate; //how fast the adjustment knob reduces the frequency in Hz/degree of rotation (loosen)
+   tuneString.tighten_rate = AA2.tighten_rate;
+  servoTune.attach(AA2.ServoPin); //must be a pwm pin
    for (int c = 0; c<samples; c++) {
       vReal[c] = butterWorth_A2(vReal[c]);
    }
@@ -354,7 +381,7 @@ if (valid_Frequency == 1){
 //Serial.println("VALID FREQUENCY FOUND AND IS:"); 
 //Serial.println(frequencyCandidate[0]); 
 valid_Frequency = 0; //reset flag to wait for next valid frequency
-error = abs(averageArray(frequencyCandidate) - tuneString.targetFrequency);
+error = averageArray(frequencyCandidate) - tuneString.targetFrequency;
 Serial.print("Average frequency detected: ");
 Serial.print(averageArray(frequencyCandidate));
 Serial.print("\n");
@@ -367,7 +394,7 @@ Serial.print("\n");
 frequencyCandidate[0]=0;
 frequencyCandidate[1]=0;
 frequencyCandidate[2]=0;
-if (error<1.5){
+if (abs(error)<1.5){
   is_Tuned = 1;
   Serial.println("Guitar is tuned yayyyyyyyyyyyyyyyyyyyyy");
   //flash LEDs
@@ -383,10 +410,29 @@ if (error<1.5){
    
 
     
-} else if (error>=1.5 && error<35) {
+} else if (abs(error)>=1.5 && abs(error)<35) {
   is_Tuned = 0;
   Serial.println("Guitar NOT TUNED");
   //motor control
+  if (error<0) {
+    //loosen
+    
+    
+    rightRotate(abs(error)/tuneString.loosen_rate, servoTune);
+    
+  }else if (error>0) {
+    //tighten
+    leftRotate(abs(error)/tuneString.tighten_rate, servoTune);
+    
+    
+  }else {
+    Serial.println("Error");
+  }
+
+
+
+
+  
 }else {
   is_Tuned = 0;
   error_flag = 1;
@@ -410,6 +456,43 @@ void adjustString(double error) {
 }
 
 
+//SERVO COMMANDS//////////
+///SERVO ROTATE RIGHT////
+//Right rotate
+double rightRotate(double angle, Servo servo){
+  uint32_t timeAngle;
+  double value = 0.0000606; //Don't change
+  timeAngle = (angle*value)* 60000L;
+
+   for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
+   servo.writeMicroseconds(1300);
+  
+  }
+  for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
+    servo.writeMicroseconds(1500);
+
+  }
+  
+}
+
+
+//LEFT ROTATE
+//Left rotate
+double leftRotate(double angle, Servo servo){
+  uint32_t timeAngle;
+  double value = 0.0000606; // Don't change
+  timeAngle = (angle*value)* 60000L;
+
+   for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
+   servo.writeMicroseconds(1700);
+ 
+  }
+  for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
+    servo.writeMicroseconds(1500);
+
+  }
+ 
+}
 
 
 
