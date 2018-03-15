@@ -128,6 +128,8 @@ struct strings G3;
 struct strings B3;
 struct strings E4;
 struct strings tuneString;
+double frequency_before;
+double frequency_after;
 
 //Servos//
 Servo servoTune;
@@ -416,8 +418,6 @@ if (abs(error)<1.5){
   //motor control
   if (error<0) {
     //loosen
-    
-    
     rightRotate(abs(error)/tuneString.loosen_rate, servoTune);
     
   }else if (error>0) {
@@ -475,7 +475,6 @@ double rightRotate(double angle, Servo servo){
   
 }
 
-
 //LEFT ROTATE
 //Left rotate
 double leftRotate(double angle, Servo servo){
@@ -493,6 +492,35 @@ double leftRotate(double angle, Servo servo){
  
 }
 
+void calibrateStrings() {
+
+if (digitalRead(LED_OUTPUT_STRING_E2) == HIGH){
+  
+   tuneString.targetFrequency = E2.targetFrequency;
+   tuneString.loosen_rate = E2.loosen_rate; //how fast the adjustment knob reduces the frequency in Hz/degree of rotation (loosen)
+   tuneString.tighten_rate = E2.tighten_rate;
+   servoTune.attach(E2.ServoPin); //must be a pwm pin
+  
+}else if  (digitalRead(LED_OUTPUT_STRING_A2) == HIGH){
+  tuneString.targetFrequency = AA2.targetFrequency;
+  tuneString.loosen_rate = AA2.loosen_rate; //how fast the adjustment knob reduces the frequency in Hz/degree of rotation (loosen)
+   tuneString.tighten_rate = AA2.tighten_rate;
+  
+   
+} else if  (digitalRead(LED_OUTPUT_STRING_D3) == HIGH){
+  tuneString.targetFrequency = D3.targetFrequency;;
+   
+} else if  (digitalRead(LED_OUTPUT_STRING_G3) == HIGH){
+  tuneString.targetFrequency = G3.targetFrequency;
+   
+} else if  (digitalRead(LED_OUTPUT_STRING_B2) == HIGH){
+  tuneString.targetFrequency = B3.targetFrequency;
+   
+} else if  (digitalRead(LED_OUTPUT_STRING_E4) == HIGH){
+  tuneString.targetFrequency = E4.targetFrequency;
+   
+}
+}
 
 
 
