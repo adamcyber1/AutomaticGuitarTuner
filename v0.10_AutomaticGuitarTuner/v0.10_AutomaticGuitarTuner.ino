@@ -95,12 +95,12 @@ int count = 0;
 //PINS//
 //LED CONTROL//
 int set_pin = 13;
-int LED_OUTPUT_STRING_A2 = 5;
-int LED_OUTPUT_STRING_D3 = 6;
-int LED_OUTPUT_STRING_G3 = 7;
-int LED_OUTPUT_STRING_B2 = 8;
-int LED_OUTPUT_STRING_E2 = 9;
-int LED_OUTPUT_STRING_E4 = 4;
+int LED_OUTPUT_STRING_E2 = 32;
+int LED_OUTPUT_STRING_A2 = 30;
+int LED_OUTPUT_STRING_D3 = 28;
+int LED_OUTPUT_STRING_G3 = 26;
+int LED_OUTPUT_STRING_B2 = 24;
+int LED_OUTPUT_STRING_E4 = 22;
 int currentLed = 0;
 //SENSORS//
 int sensorPin = A0; //Defines the analog pin for the pickup signal
@@ -189,7 +189,6 @@ void setup()
 
 /////////////////////////////MAIN LOOP ////////////////////////////////////////
 void loop() {
-// Serial.println("===================================================== NEW LOOP ===========================================");
 //***************SIGNAL AQUISITION****************//
   for ( int c = 0; c < buffersize; c++) {
      vReal[c] = (double) analogRead(sensorPin);
@@ -457,26 +456,10 @@ if (abs(error)<1.5){
 
 
 //SERVO COMMANDS//////////
-///SERVO ROTATE RIGHT////
-//Right rotate
-double rightRotate(double angle, Servo servo){
-  uint32_t timeAngle;
-  double value = 0.0000606; //Don't change
-  timeAngle = (angle*value)* 60000L;
-
-   for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
-   servo.writeMicroseconds(1300);
-  
-  }
-  for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
-    servo.writeMicroseconds(1500);
-
-  }
-  
-}
 
 
-////////////////////////NEW FUNCTIONS THAT CAN DETECT WHICH STRING IS SELECTED /////////////////////
+
+////////////////////////SMART SERVO CONTROL FUNCTIONS/////////////////////
 void smartRotate(double angle, Servo servoTune, int label, double error){
 
  if (error<0) {
@@ -547,6 +530,24 @@ double leftRotate(double angle, Servo servo){
     servo.writeMicroseconds(1500);
 
   }
+}
+
+///SERVO ROTATE RIGHT////
+//Right rotate
+double rightRotate(double angle, Servo servo){
+  uint32_t timeAngle;
+  double value = 0.0000606; //Don't change
+  timeAngle = (angle*value)* 60000L;
+
+   for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
+   servo.writeMicroseconds(1300);
+  
+  }
+  for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
+    servo.writeMicroseconds(1500);
+
+  }
+  
 }
 
 
