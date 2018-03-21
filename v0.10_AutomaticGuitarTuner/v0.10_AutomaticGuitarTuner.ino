@@ -140,34 +140,34 @@ void setup()
 ///////////////DEFINE STRING PARAMETERS /////////////////////////////////
   E2.targetFrequency = 82.4; //desired 'in tune' pitch
   E2.rate= 0.04; //how fast the adjustment knob reduces the frequency in Hz/degree of rotation (loosen) 
-  E2.ServoPin = 10;
+  E2.ServoPin = 2;
   E2.label = 1;
   
   AA2.targetFrequency = 110;
   AA2.rate= 0.0511;  
-  AA2.ServoPin = 11;
+  AA2.ServoPin = 3;
   AA2.label = 2;
   
   D3.targetFrequency = 146.8;
   D3.rate= 0.05;  
-  D3.ServoPin = 12;
+  D3.ServoPin = 4;
   D3.label = 3;
   
   G3.targetFrequency = 196;
   G3.rate = 0.07; 
-  G3.ServoPin = 13;
+  G3.ServoPin = 5;
   G3.label = 4;
   
   B3.targetFrequency = 247;
   B3.rate = 0.094;
-  B3.ServoPin = 14;
+  B3.ServoPin = 6;
   B3.label = 5;
   
   
   E4.targetFrequency = 329.6;
   E4.rate = 0.08888;  
   E4.ServoPin = 15;
-  E4.label = 6;
+  E4.label = 7;
   
   tuneString.targetFrequency = 100;
   tuneString.rate = 100;
@@ -492,7 +492,7 @@ void smartRotate(double angle, Servo servoTune, int label, double error){
       leftRotate(abs(error)/tuneString.rate, servoTune);
       break;
     case 2: //A2
-      leftRotate(abs(error)/tuneString.rate, servoTune);
+      rightRotate(45, servoTune);
       break;
     case 3: //D3
       leftRotate(abs(error)/tuneString.rate, servoTune);
