@@ -64,7 +64,7 @@
 #include "AGT_FFT.h" 
 #include "AGT_butterworth.h" 
 #include <Servo.h>
-
+#include <Wire.h>
 
 ///////////////////////////////////////// END Libraries////////////////////////////////////////////  
 
@@ -96,13 +96,13 @@ int count = 0;
 
 //PINS//
 //LED CONTROL//
-int set_pin = 13;
+int set_pin = 52;
 int LED_OUTPUT_STRING_E2 = 32;
-int LED_OUTPUT_STRING_A2 = 30;
-int LED_OUTPUT_STRING_D3 = 28;
-int LED_OUTPUT_STRING_G3 = 26;
-int LED_OUTPUT_STRING_B2 = 24;
-int LED_OUTPUT_STRING_E4 = 22;
+int LED_OUTPUT_STRING_A2 = 34;
+int LED_OUTPUT_STRING_D3 = 36;
+int LED_OUTPUT_STRING_G3 = 38;
+int LED_OUTPUT_STRING_B2 = 40;
+int LED_OUTPUT_STRING_E4 = 42;
 int currentLed = 0;
 //SENSORS//
 int sensorPin = A0; //Defines the analog pin for the pickup signal
@@ -188,6 +188,12 @@ void setup()
   pinMode(LED_OUTPUT_STRING_G3, OUTPUT);
   pinMode(LED_OUTPUT_STRING_B2, OUTPUT);
   pinMode(LED_OUTPUT_STRING_E2, OUTPUT);
+
+
+
+  //DISPLAY SCREEN//
+  Wire.begin(); // join i2c bus (address optional for master)
+ 
 
 
 }
@@ -282,6 +288,7 @@ if (averageArray(vReal)>9) {
 } else {
   no_Signal = 1;
 }
+
 
 //*****************Enter Algorithm********************//
 //If a signal has bee registered, perform the frequency detection algorithm//
@@ -405,6 +412,7 @@ if (valid_Frequency == 1){
 //Serial.println(frequencyCandidate[0]); 
 valid_Frequency = 0; //reset flag to wait for next valid frequency
 error = averageArray(frequencyCandidate) - tuneString.targetFrequency;
+display_write(String(averageArray(frequencyCandidate)));
 Serial.print("Average frequency detected: ");
 Serial.print(averageArray(frequencyCandidate));
 Serial.print("\n");
@@ -559,10 +567,20 @@ double sum = 0;
 }
 
 ///DYNAMICALLY CALIBRATE THE MOTORS DURING OPERATION/////////
-void dynamic_calibration(){
-  
-  
+void dynamic_calibration(){ 
   motors_used = 0;
+}
+
+//DISPLAY SCREEN///
+//MAXIMUM 3 CHARACTERS, I.E.; "EAG", "ERR", "123"
+void display_write(String string){
+  char char_arr[4];
+  string.toCharArray(char_arr, 4);
+  Wire.beginTransmission(8); // transmit to device #8
+  for(uint8_t i = 0 ; i < 3; i++){
+    Wire.write(char_arr[i]);
+  }
+  Wire.endTransmission();    // stop transmitting
 }
 
 
