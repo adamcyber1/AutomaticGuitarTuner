@@ -151,7 +151,7 @@ void setup()
   
   AA2.targetFrequency = 110;
   AA2.rate= 0.045;  
-  AA2.ServoPin = 3;
+  AA2.ServoPin = 12;
   AA2.label = 2;
   
   D3.targetFrequency = 146.8;
@@ -209,6 +209,12 @@ void loop() {
      vImag[c] = 0.0;
     // Serial.println(vReal[c]);
     }
+
+
+
+
+
+
 
     
 
@@ -412,7 +418,7 @@ if (valid_Frequency == 1){
 //Serial.println(frequencyCandidate[0]); 
 valid_Frequency = 0; //reset flag to wait for next valid frequency
 error = averageArray(frequencyCandidate) - tuneString.targetFrequency;
-display_write(String(averageArray(frequencyCandidate)));
+
 Serial.print("Average frequency detected: ");
 Serial.print(averageArray(frequencyCandidate));
 Serial.print("\n");
