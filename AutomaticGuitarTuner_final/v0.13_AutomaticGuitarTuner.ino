@@ -15,12 +15,8 @@
 /*
  * Authors
  * 
- *Adam Fillion
- *Michael de Grasse
- *Zhang'Ado' Qinyao
- *Ashen
- *Kaya 
- *Vladimir .
+ *Adam Fillion*
+ 
  */
 
  ////////////////////////////////////PROJECT SUMMARY//////////////////////////////////////////
