@@ -12,13 +12,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
-/*
- * Authors
- * 
- *Adam Fillion*
- 
- */
-
  ////////////////////////////////////PROJECT SUMMARY//////////////////////////////////////////
  /*
   * The enlosed project is the firmware for the Automatic Guitar Tuner (AGT)
@@ -50,20 +43,10 @@
   * 
   * */
 
-
-
-/////////////////////////////////////////Libraries////////////////////////////////////////////  
-
-
 #include "AGT_FFT.h" 
 #include "AGT_butterworth.h" 
 #include <Servo.h>
 #include <Wire.h>
-
-///////////////////////////////////////// END Libraries////////////////////////////////////////////  
-
-
-
 
 ///////////////////////CONFIGURATION AND SETUP/////////////////////////////
 arduinoFFT FFT = arduinoFFT(); /* Create FFT object from arduinoFFT library */
@@ -110,7 +93,7 @@ bool error_flag = 0;
 bool motors_used = 0;
 
 //STRING PARAMETERS//
-//CONSIDER SHRINKING THIS ONTO ONE LINE IE. struct strings E2, AA2, D3, G3 etc...
+
 struct strings  {
   double targetFrequency;
   double rate; //the frequency shift for a quarter rotation of the adjustment knob
@@ -118,13 +101,10 @@ struct strings  {
   int ServoPin;
   int lastError;
   int newError;
-};
-struct strings E2, AA2, D3, G3, B3, E4, tuneString;
-
+}E2, AA2, D3, G3, B3, E4, tuneString;
 
 //Servos//
 Servo servoTune;
-
 
 void setup()
 {
@@ -177,10 +157,8 @@ void setup()
   pinMode(LED_OUTPUT_STRING_B2, OUTPUT);
   pinMode(LED_OUTPUT_STRING_E2, OUTPUT);
 
-
-
   //DISPLAY SCREEN//
-  Wire.begin(); // join i2c bus (address optional for master)
+  Wire.begin(); // join i2c bus 
  
 }
 ///////////////////////END CONFIGURATION AND SETUP/////////////////////////
@@ -272,19 +250,12 @@ if (averageArray(vReal)>9) {
   no_Signal = 1;
 }
 
-
 //*****************Enter Algorithm********************//
-//If a signal has bee registered, perform the frequency detection algorithm//
+//If a signal has been registered, perform the frequency detection algorithm//
 if (no_Signal==0) {
   complete_algorithm(vReal, vImag, samples);
   no_Signal=1; //reset signal flag
 }
-
-//dynamic setting adjustment///
-if (motors_used==1) {
-  
-}
-
 
 } // loop
 
@@ -346,7 +317,6 @@ if (digitalRead(LED_OUTPUT_STRING_E2) == HIGH){
    }
 }
    
-
   //***************FAST FOURIER TRANSFORM AND PEAK DETECTION****************//
 frequencyCandidate[indexCounter] =  FFT_complete_function(vReal, vImag, samples);
 Serial.print("Detected Frequency:");
@@ -384,66 +354,40 @@ properly tuned, the LED's will blink.
 In the event that the detected frequency is radically different than the expected pitch, an error will be assumed and no
 action will be taken to avoid accidentally overtightening the string
 */
-if (valid_Frequency == 1){
-//Serial.print("Valid Frequency Flag:");
-//Serial.print(valid_Frequency);
-//Serial.print("\n");
-//Serial.println("VALID FREQUENCY FOUND AND IS:"); 
-//Serial.println(frequencyCandidate[0]); 
-valid_Frequency = 0; //reset flag to wait for next valid frequency
-error = averageArray(frequencyCandidate) - tuneString.targetFrequency;
-display_write(String(averageArray(frequencyCandidate)));
-Serial.print("Average frequency detected: ");
-Serial.print(averageArray(frequencyCandidate));
-Serial.print("\n");
-Serial.print("Target Frequency: ");
-Serial.print(tuneString.targetFrequency);
-Serial.print("\n");
-Serial.print("Error: ");
-Serial.print(error);
-Serial.print("\n");
-frequencyCandidate[0]=0;
-frequencyCandidate[1]=0;
-frequencyCandidate[2]=0;
-if (abs(error)<1.5){
-  is_Tuned = 1;
-  Serial.println("Guitar is tuned yayyyyyyyyyyyyyyyyyyyyy");
+if (valid_Frequency == 1){ 
+   valid_Frequency = 0; //reset flag to wait for next valid frequency
+   error = averageArray(frequencyCandidate) - tuneString.targetFrequency;
+   display_write(String(averageArray(frequencyCandidate)));
+   frequencyCandidate[0]=0;
+   frequencyCandidate[1]=0;
+   frequencyCandidate[2]=0;
+   if (abs(error)<1.5){
+      is_Tuned = 1;
+    
   //flash LEDs
-  for (int flash = 0; flash<10; flash++) {
+   for (int flash = 0; flash<10; flash++) {
       digitalWrite(LED_OUTPUT_STRING_E2, !digitalRead(LED_OUTPUT_STRING_E2));
       digitalWrite(LED_OUTPUT_STRING_A2, !digitalRead(LED_OUTPUT_STRING_A2));
       digitalWrite(LED_OUTPUT_STRING_D3, !digitalRead(LED_OUTPUT_STRING_D3));
       digitalWrite(LED_OUTPUT_STRING_G3, !digitalRead(LED_OUTPUT_STRING_G3));
       digitalWrite(LED_OUTPUT_STRING_B2, !digitalRead(LED_OUTPUT_STRING_B2));
       digitalWrite(LED_OUTPUT_STRING_E4, !digitalRead(LED_OUTPUT_STRING_E4));
-       delay(100);
+      delay(100);
     }
-   
-
     
 } else if (abs(error)>=1.5 && abs(error)<35) {
   is_Tuned = 0;
   Serial.println("Guitar NOT TUNED");
   //motor control
   smartRotate(abs(error)/tuneString.rate,servoTune, tuneString.label, error);
-  
-
 }else {
   is_Tuned = 0;
   error_flag = 1;
   Serial.println("ERROR: FREQUENCY DETECTION NOT ACCURATE");
 }
 }
-
 }
-
-
-
-
-
 //SERVO COMMANDS//////////
-
-
 
 ////////////////////////SMART SERVO CONTROL FUNCTIONS/////////////////////
 void smartRotate(double angle, Servo servoTune, int label, double error){
@@ -497,8 +441,6 @@ void smartRotate(double angle, Servo servoTune, int label, double error){
       break;
   }
  }
-
- 
 }
 
 //LEFT ROTATE
@@ -507,14 +449,12 @@ double leftRotate(double angle, Servo servo){
   uint32_t timeAngle;
   double value = 0.0000606; // Don't change
   timeAngle = (angle*value)* 60000L;
-
+ 
    for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
    servo.writeMicroseconds(1700);
- 
   }
   for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
     servo.writeMicroseconds(1500);
-
   }
 }
 
@@ -524,18 +464,13 @@ double rightRotate(double angle, Servo servo){
   uint32_t timeAngle;
   double value = 0.0000606; //Don't change
   timeAngle = (angle*value)* 60000L;
-
    for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
    servo.writeMicroseconds(1300);
-  
   }
   for( uint32_t tStart = millis();  (millis()-tStart) < timeAngle;  ){
     servo.writeMicroseconds(1500);
-
   }
-  
 }
-
 
 ///////Average function/////////
 double averageArray(double* vReal){
