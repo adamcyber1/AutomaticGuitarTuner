@@ -7,10 +7,16 @@ An Arduino program that tunes a guitar automatically using DC motors attached di
 [![Not Found](https://img.youtube.com/vi/g_ZutZl-uOI/0.jpg)](https://www.youtube.com/watch?v=g_ZutZl-uOI)
 There is a lot of background noise, but the video consists of a prototype AGT tuning an acoustic guitar.
 
+# About
+
+Completed as part of a course in early 2018. The programming style is a little bit....unruley, but at the time I had barely programmed whatsoever. This project actually helped encourage me to take on more programming challenges. 
+
 # How it works
 ## Signal Acquisition
 
+An inductive sensor (aka guitarpickup, taken from an electric guitar) is used to convert the movement of the conductive metal strings into a potential difference across the output terminals of the sensor.
 
+<img src="/media/signal.JPG" height="400" width="400"> 
 
 ## Analog Amplification and Filtering
 
@@ -25,11 +31,12 @@ Fast Fourier Transform (FFT) is applied to detect the fundamental frequency of t
 ## Frequency Adjustment
 The delta between the actual and desired string frequency is converted to a rotation quantity (degrees) which is applied to the servo motor. 
 
-## Photos
-
-<img src="/media/signal.JPG" height="400" width="400"> 
-<img src="/media/led_box.jpg" height="400" width="400">
 <img src="/media/servo_attached.JPG" height="400" width="400">
+
+## Other Photos
+
+<img src="/media/led_box.jpg" height="400" width="400">
+
 <img src="/media/servo.JPG" height="400" width="400">
 
 
